@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { Check } from 'lucide-react'
+import SignOutButton from '@/components/SignOutButton'
 
 type Tab = 'queue' | 'scholar' | 'completed'
 
@@ -26,6 +27,14 @@ export default function SolicitorPage() {
           <div className="ir"><span className="irl">Pending</span><span className="irv a">3</span></div>
           <div className="ir"><span className="irl">Avg review time</span><span className="irv">52 min</span></div>
         </div>
+
+        <SignOutButton style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          marginTop: 'auto', width: '100%', padding: '9px 12px',
+          background: 'none', border: '1px solid var(--cr2)',
+          borderRadius: 'var(--r)', cursor: 'pointer',
+          fontSize: 13, color: 'var(--ink3)', fontFamily: 'var(--sans)',
+        }} />
       </div>
 
       <div className="pmain">

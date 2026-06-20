@@ -3,6 +3,9 @@
 # internal project docs (client docs, briefs, design files)
 /_internal
 
+# supabase local config and SQL scripts
+/supabase
+
 # dependencies
 /node_modules
 /.pnp

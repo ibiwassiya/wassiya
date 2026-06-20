@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { Check } from 'lucide-react'
+import SignOutButton from '@/components/SignOutButton'
 
 type Tab = 'overview' | 'documents' | 'assetreg' | 'messages'
 
@@ -27,6 +28,14 @@ export default function PortalPage() {
           <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>Fatima Hassan</div>
           <div style={{ fontSize: 11, color: 'var(--ink3)' }}>SRA: 123456</div>
         </div>
+
+        <SignOutButton style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          marginTop: 'auto', paddingTop: 16, width: '100%', padding: '9px 12px',
+          background: 'none', border: '1px solid var(--cr2)',
+          borderRadius: 'var(--r)', cursor: 'pointer',
+          fontSize: 13, color: 'var(--ink3)', fontFamily: 'var(--sans)',
+        }} />
       </div>
 
       <div className="pmain">

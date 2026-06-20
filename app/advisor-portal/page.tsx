@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import SignOutButton from '@/components/SignOutButton'
 
 export const metadata: Metadata = {
   title: 'Advisor Dashboard — Wasiyya',
@@ -8,9 +9,18 @@ export const metadata: Metadata = {
 export default function AdvisorPortalPage() {
   return (
     <div style={{ padding: 28, maxWidth: 1060, margin: '0 auto' }}>
-      <div style={{ marginBottom: 22 }}>
-        <div style={{ fontFamily: 'var(--serif)', fontSize: 28, color: 'var(--ink)', marginBottom: 4 }}>Advisor dashboard</div>
-        <div style={{ fontSize: 13, color: 'var(--ink3)' }}>Bilal Mahmood · Enver Wealth Management · 20% commission per completed case</div>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 22 }}>
+        <div>
+          <div style={{ fontFamily: 'var(--serif)', fontSize: 28, color: 'var(--ink)', marginBottom: 4 }}>Advisor dashboard</div>
+          <div style={{ fontSize: 13, color: 'var(--ink3)' }}>Bilal Mahmood · Enver Wealth Management · 20% commission per completed case</div>
+        </div>
+        <SignOutButton style={{
+          display: 'flex', alignItems: 'center', gap: 7,
+          padding: '8px 14px', background: 'none',
+          border: '1px solid var(--cr2)', borderRadius: 'var(--r)',
+          cursor: 'pointer', fontSize: 13, color: 'var(--ink3)',
+          fontFamily: 'var(--sans)',
+        }} />
       </div>
 
       <div className="metrow">

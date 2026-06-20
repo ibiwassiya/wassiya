@@ -3,6 +3,7 @@ import { Cormorant_Garamond, Jost } from 'next/font/google'
 import './globals.css'
 import Nav from '@/components/Nav'
 import ScrollToTop from '@/components/ScrollToTop'
+import { GlobalProvider } from '@/lib/context/GlobalContext'
 
 const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
@@ -28,9 +29,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${cormorant.variable} ${jost.variable}`}>
       <body>
-        <ScrollToTop />
-        <Nav />
-        {children}
+        <GlobalProvider>
+          <ScrollToTop />
+          <Nav />
+          {children}
+        </GlobalProvider>
       </body>
     </html>
   )
