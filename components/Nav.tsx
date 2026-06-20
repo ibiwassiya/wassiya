@@ -17,47 +17,45 @@ const navLinks = [
 
 const ROLE_DASHBOARDS: Record<string, string> = {
   client:    '/portal',
-  advisor:   '/advisor-portal',
+  advisor:   '/advisor',
   solicitor: '/solicitor',
   scholar:   '/scholar',
   admin:     '/admin',
 }
 
-export default function Nav() {
+interface NavProps {
+  initialUser:      User | null
+  initialRole:      string | null
+  initialDashboard: string
+}
+
+export default function Nav({ initialUser, initialRole, initialDashboard }: NavProps) {
   const pathname = usePathname()
-  const [scrolled, setScrolled] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [user, setUser] = useState<User | null>(null)
-  const [dashboard, setDashboard] = useState('/portal')
+  const [scrolled,  setScrolled]  = useState(false)
+  const [menuOpen,  setMenuOpen]  = useState(false)
+  const [user,      setUser]      = useState<User | null>(initialUser)
+  const [role,      setRole]      = useState<string | null>(initialRole)
+  const [dashboard, setDashboard] = useState(initialDashboard)
 
   useEffect(() => {
     const supabase = createClient()
 
-    async function init() {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
-      if (user) {
-        const { data } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .single()
-        setDashboard(ROLE_DASHBOARDS[(data as { role: string } | null)?.role ?? 'client'] ?? '/portal')
-      }
-    }
-
-    init()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_, session) => {
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        const { data } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', session.user.id)
-          .single()
-        setDashboard(ROLE_DASHBOARDS[(data as { role: string } | null)?.role ?? 'client'] ?? '/portal')
-      } else {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        if (session?.user) {
+          const { data } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', session.user.id)
+            .single()
+          const r = (data as { role: string } | null)?.role ?? 'client'
+          setUser(session.user)
+          setRole(r)
+          setDashboard(ROLE_DASHBOARDS[r] ?? '/portal')
+        }
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null)
+        setRole(null)
         setDashboard('/portal')
       }
     })
@@ -97,10 +95,12 @@ export default function Nav() {
           </div>
           <div className="navcta">
             {user
-              ? <Link href={dashboard} className={`nl${pathname === dashboard ? ' cur' : ''}`}>Dashboard</Link>
+              ? <Link href={dashboard} className="ncta" style={{ background: 'var(--ink)', color: '#fff' }}>Dashboard</Link>
               : <Link href="/login" className={`nl${pathname === '/login' ? ' cur' : ''}`}>Sign in</Link>
             }
-            <Link href="/start" className="ncta">Start my will</Link>
+            {(!user || role === 'client') && (
+              <Link href="/start" className="ncta">Start my will</Link>
+            )}
           </div>
           <button className="nmob" onClick={toggleMenu} aria-label="Menu">
             <span style={{ transform: menuOpen ? 'translateY(6.5px) rotate(45deg)' : '' }} />
@@ -118,9 +118,15 @@ export default function Nav() {
           ? <Link href={dashboard} className="mml" onClick={closeMenu}>Dashboard</Link>
           : <Link href="/login" className="mml" onClick={closeMenu}>Sign in</Link>
         }
-        <Link href="/solicitor" className="mml" onClick={closeMenu}>Solicitor portal</Link>
-        <Link href="/advisor-portal" className="mml" onClick={closeMenu}>Advisor portal</Link>
-        <Link href="/start" className="btn btn-g" style={{ marginTop: 16, width: '100%', justifyContent: 'center' }} onClick={closeMenu}>Start my will</Link>
+        {role === 'solicitor' && (
+          <Link href="/solicitor" className="mml" onClick={closeMenu}>Solicitor portal</Link>
+        )}
+        {role === 'advisor' && (
+          <Link href="/advisor" className="mml" onClick={closeMenu}>Advisor portal</Link>
+        )}
+        {(!user || role === 'client') && (
+          <Link href="/start" className="btn btn-g" style={{ marginTop: 16, width: '100%', justifyContent: 'center' }} onClick={closeMenu}>Start my will</Link>
+        )}
       </div>
     </>
   )

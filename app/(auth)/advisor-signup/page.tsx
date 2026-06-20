@@ -81,7 +81,7 @@ export default function AdvisorSignupPage() {
           </form>
 
           <div className="auth-div">or</div>
-          <Link href="/advisor-portal" className="btn btn-o" style={{ width: '100%', justifyContent: 'center' }}>
+          <Link href="/advisor" className="btn btn-o" style={{ width: '100%', justifyContent: 'center' }}>
             See demo advisor dashboard <ArrowRight size={14} style={{ display: 'inline', verticalAlign: 'middle' }} />
           </Link>
         </div>

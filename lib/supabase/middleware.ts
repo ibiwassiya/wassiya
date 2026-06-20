@@ -6,7 +6,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 const ROUTE_ROLES: Record<string, string[]> = {
   '/portal':         ['client',    'admin'],
   '/start':          ['client',    'admin'],
-  '/advisor-portal': ['advisor',   'admin'],
+  '/advisor':        ['advisor',   'admin'],
   '/solicitor':      ['solicitor', 'admin'],
   '/scholar':        ['scholar',   'admin'],
   '/admin':          ['admin'],
@@ -15,7 +15,7 @@ const ROUTE_ROLES: Record<string, string[]> = {
 // Where to send each role after a successful sign-in (or wrong-route redirect).
 const ROLE_DASHBOARDS: Record<string, string> = {
   client:    '/portal',
-  advisor:   '/advisor-portal',
+  advisor:   '/advisor',
   solicitor: '/solicitor',
   scholar:   '/scholar',
   admin:     '/admin',

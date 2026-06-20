@@ -21,7 +21,7 @@ export default function Footer() {
             <Link href="/for-advisors" className="footlink">For advisors</Link>
             <Link href="/for-mosques" className="footlink">For mosques</Link>
             <Link href="/solicitor" className="footlink">Solicitor portal</Link>
-            <Link href="/advisor-portal" className="footlink">Advisor dashboard</Link>
+            <Link href="/advisor" className="footlink">Advisor dashboard</Link>
           </div>
           <div>
             <div className="footcolt">Company</div>

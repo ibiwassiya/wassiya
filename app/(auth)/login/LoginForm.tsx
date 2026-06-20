@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 
 const ROLE_DASHBOARDS: Record<string, string> = {
   client:    '/portal',
-  advisor:   '/advisor-portal',
+  advisor:   '/advisor',
   solicitor: '/solicitor',
   scholar:   '/scholar',
   admin:     '/admin',
@@ -191,7 +191,7 @@ export default function LoginForm({ error: initialError }: Props) {
         <div style={{ textAlign: 'center', marginTop: 12, fontSize: 12, color: 'var(--ink3)' }}>
           <Link href="/solicitor" style={{ color: 'var(--ink3)' }}>Solicitor portal</Link>
           <span style={{ margin: '0 8px', opacity: .4 }}>·</span>
-          <Link href="/advisor-portal" style={{ color: 'var(--ink3)' }}>Advisor portal</Link>
+          <Link href="/advisor" style={{ color: 'var(--ink3)' }}>Advisor portal</Link>
         </div>
 
       </div>

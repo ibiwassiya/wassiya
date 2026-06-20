@@ -2,6 +2,7 @@
 import { useState, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { Badge } from '@/components/ui/badge'
 
 const STAGES = ['You','Address','Family','Relatives','Property','Finance','Debts','Legal','Religious','Executor','Guardian','Islamic','Gifts','IHT','Summary']
 const STAGE_MAP = [0,1,2,4,5,6,8,9,11,12,13,14,15,16,17]
@@ -141,7 +142,7 @@ export default function WillBuilderPage() {
       <div className="wbstages">
         {STAGES.map((s, i) => (
           <div key={s} className={`wbs ${stageIndex(i)}`} onClick={() => { if (cur >= STAGE_MAP[i]) { setCur(STAGE_MAP[i]); window.scrollTo({ top: 0, behavior: 'instant' }) } }} title={s}>
-            {s.substring(0, 3)}
+            {i + 1}
           </div>
         ))}
       </div>
@@ -369,9 +370,16 @@ export default function WillBuilderPage() {
 
           {step.type === 'summary' && (
             <>
-              <span className={`chip chip-${fee.tier === 'complex' ? 'a' : fee.tier === 'family' ? 'b' : 'g'}`} style={{ marginBottom: 12 }}>
+              <Badge variant="outline" style={{
+                marginBottom: 12,
+                ...(fee.tier === 'complex'
+                  ? { background: 'var(--ambl)', color: 'var(--ambd)', borderColor: 'transparent' }
+                  : fee.tier === 'family'
+                  ? { background: 'var(--bluel)', color: 'var(--blue)', borderColor: 'transparent' }
+                  : { background: 'var(--gl)', color: 'var(--gd)', borderColor: 'transparent' })
+              }}>
                 {fee.tier === 'complex' ? 'Complex case' : fee.tier === 'family' ? 'Family case' : 'Essentials'}
-              </span>
+              </Badge>
               <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--ink)', marginBottom: 3 }}>Your will summary</div>
               <div style={{ fontSize: 11, color: 'var(--ink3)', marginBottom: 13 }}>Review before payment</div>
               <div className="sumrow"><span className="sk">Marital status</span><span className="sv">{answers.opts[2] !== undefined ? (STEPS[2] as { ops: { t: string }[] }).ops[answers.opts[2]]?.t : '—'}</span></div>

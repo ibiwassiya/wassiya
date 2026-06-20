@@ -47,8 +47,7 @@ export async function signUpAdvisor(formData: FormData) {
 
   if (error) throw new Error(error.message)
 
-  // Email confirmation is disabled — session is active immediately.
   revalidatePath('/', 'layout')
-  redirect('/advisor-portal')
+  redirect('/advisor')
 }
 

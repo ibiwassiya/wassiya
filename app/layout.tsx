@@ -1,9 +1,19 @@
 import type { Metadata } from 'next'
-import { Cormorant_Garamond, Jost } from 'next/font/google'
+import { Cormorant_Garamond, Jost, Geist } from 'next/font/google'
 import './globals.css'
 import Nav from '@/components/Nav'
 import ScrollToTop from '@/components/ScrollToTop'
 import { GlobalProvider } from '@/lib/context/GlobalContext'
+import { cn } from "@/lib/utils"
+import { createClient } from '@/lib/supabase/server'
+
+const ROLE_DASHBOARDS: Record<string, string> = {
+  client:    '/portal',
+  advisor:   '/advisor',
+  solicitor: '/solicitor',
+  scholar:   '/scholar',
+  admin:     '/admin',
+}
 
 const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
@@ -13,25 +23,36 @@ const cormorant = Cormorant_Garamond({
   display: 'swap',
 })
 
-const jost = Jost({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600'],
-  variable: '--font-sans',
-  display: 'swap',
-})
+const geist = Geist({subsets:['latin'],variable:'--font-sans'})
 
 export const metadata: Metadata = {
   title: 'Wasiyya — Islamic Estate Planning',
   description: 'Faraid-compliant, solicitor-reviewed Islamic wills for UK Muslim families. Guided, affordable, and built with scholars.',
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  let role: string | null = null
+  let dashboard = '/portal'
+
+  if (user) {
+    const { data } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+    role = (data as { role: string } | null)?.role ?? 'client'
+    dashboard = ROLE_DASHBOARDS[role] ?? '/portal'
+  }
+
   return (
-    <html lang="en" className={`${cormorant.variable} ${jost.variable}`}>
+    <html lang="en" className={cn(cormorant.variable, "font-sans", geist.variable)}>
       <body>
         <GlobalProvider>
           <ScrollToTop />
-          <Nav />
+          <Nav initialUser={user} initialRole={role} initialDashboard={dashboard} />
           {children}
         </GlobalProvider>
       </body>

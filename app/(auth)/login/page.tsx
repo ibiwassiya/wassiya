@@ -8,7 +8,7 @@ interface Props {
 
 const ROLE_DASHBOARDS: Record<string, string> = {
   client:    '/portal',
-  advisor:   '/advisor-portal',
+  advisor:   '/advisor',
   solicitor: '/solicitor',
   scholar:   '/scholar',
   admin:     '/admin',

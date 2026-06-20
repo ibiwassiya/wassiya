@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import AdminDashboard from './AdminDashboard'
+import AdminSidebar from './components/AdminSidebar'
+import UsersTab from './components/UsersTab'
+import CreateUserForm from './components/CreateUserForm'
 
 export type Profile = {
   id:              string
@@ -17,13 +19,12 @@ export type Profile = {
 }
 
 interface Props {
-  searchParams: Promise<{ tab?: string; error?: string; success?: string }>
+  searchParams: Promise<{ tab?: string }>
 }
 
 export default async function AdminPage({ searchParams }: Props) {
   const supabase = await createClient()
 
-  // Verify the caller is an admin before rendering anything.
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
@@ -35,20 +36,21 @@ export default async function AdminPage({ searchParams }: Props) {
 
   if (me?.role !== 'admin') redirect('/portal')
 
-  // Fetch all profiles — allowed by the "admins can read all profiles" RLS policy.
   const { data: profiles } = await supabase
     .from('profiles')
     .select('id, full_name, email, phone, role, is_active, created_at, firm, sra_number, referral_code, commission_rate')
     .order('created_at', { ascending: false })
 
-  const { tab, error } = await searchParams
+  const { tab } = await searchParams
+  const activeTab = (tab === 'create' ? 'create' : 'users') as 'users' | 'create'
 
   return (
-    <AdminDashboard
-      profiles={(profiles ?? []) as Profile[]}
-      currentUserId={user.id}
-      defaultTab={(tab as 'users' | 'create') ?? 'users'}
-      error={error}
-    />
+    <div className="pwrap">
+      <AdminSidebar activeTab={activeTab} profiles={(profiles ?? []) as Profile[]} />
+      <div className="pmain">
+        {activeTab === 'users'  && <UsersTab profiles={(profiles ?? []) as Profile[]} currentUserId={user.id} />}
+        {activeTab === 'create' && <CreateUserForm />}
+      </div>
+    </div>
   )
 }
