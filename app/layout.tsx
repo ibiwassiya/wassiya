@@ -32,16 +32,17 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: claimsData } = await supabase.auth.getClaims()
+  const userId = claimsData?.claims?.sub
 
   let role: string | null = null
   let dashboard = '/portal'
 
-  if (user) {
+  if (userId) {
     const { data } = await supabase
       .from('profiles')
       .select('role')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single()
     role = (data as { role: string } | null)?.role ?? 'client'
     dashboard = ROLE_DASHBOARDS[role] ?? '/portal'
@@ -52,7 +53,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         <GlobalProvider>
           <ScrollToTop />
-          <Nav initialUser={user} initialRole={role} initialDashboard={dashboard} />
+          <Nav initialLoggedIn={!!userId} initialRole={role} initialDashboard={dashboard} />
           {children}
         </GlobalProvider>
       </body>

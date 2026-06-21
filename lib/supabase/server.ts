@@ -13,13 +13,13 @@ export async function createClient() {
         getAll() {
           return cookieStore.getAll()
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet, _cacheHeaders) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options)
             )
           } catch {
-            // Called from a Server Component — the proxy keeps the session alive.
+            // Called from a Server Component — the proxy handles cache headers.
           }
         },
       },

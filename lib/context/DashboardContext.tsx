@@ -1,6 +1,5 @@
 'use client'
 import { createContext, useContext } from 'react'
-import type { User } from '@supabase/supabase-js'
 
 export type DashboardProfile = {
   id:              string
@@ -16,7 +15,7 @@ export type DashboardProfile = {
 }
 
 type DashboardContextValue = {
-  user:    User
+  user:    { id: string }
   profile: DashboardProfile
 }
 
@@ -33,7 +32,7 @@ export default function DashboardProvider({
   profile,
   children,
 }: {
-  user:     User
+  user:     { id: string }
   profile:  DashboardProfile
   children: React.ReactNode
 }) {

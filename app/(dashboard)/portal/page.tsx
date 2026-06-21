@@ -1,57 +1,53 @@
-'use client'
-import { useState } from 'react'
-import SignOutButton from '@/components/SignOutButton'
-import { Separator } from '@/components/ui/separator'
-import { Badge } from '@/components/ui/badge'
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import PortalSidebar from './components/PortalSidebar'
 import OverviewTab from './components/OverviewTab'
 import DocumentsTab from './components/DocumentsTab'
 import AssetRegisterTab from './components/AssetRegisterTab'
 import MessagesTab from './components/MessagesTab'
+import MyWillsTab from './components/MyWillsTab'
+type Tab = 'overview' | 'mywills' | 'documents' | 'assetreg' | 'messages'
 
-type Tab = 'overview' | 'documents' | 'assetreg' | 'messages'
+type Draft = {
+  id: string
+  answers: Record<string, unknown> | null
+  updated_at: string
+  expires_at: string
+}
+const TABS: Tab[] = ['overview', 'mywills', 'documents', 'assetreg', 'messages']
 
-export default function PortalPage() {
-  const [tab, setTab] = useState<Tab>('overview')
+interface Props {
+  searchParams: Promise<{ tab?: string }>
+}
+
+export default async function PortalPage({ searchParams }: Props) {
+  const supabase = await createClient()
+  const { data } = await supabase.auth.getClaims()
+  const userId = data?.claims?.sub
+  if (!userId) redirect('/login')
+
+  const { tab } = await searchParams
+  const activeTab = (TABS.includes(tab as Tab) ? tab : 'overview') as Tab
+
+  const drafts: Draft[] = []
+  if (activeTab === 'mywills') {
+    const { data } = await supabase
+      .from('questionnaire_drafts')
+      .select('id, answers, updated_at, expires_at')
+      .eq('customer_id', userId)
+      .order('updated_at', { ascending: false })
+    if (data) drafts.push(...(data as Draft[]))
+  }
 
   return (
     <div className="pwrap">
-      <div className="psb">
-        <div className="pub">
-          <div className="pav" style={{ background: 'var(--g)', color: '#fff' }}>AK</div>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>Ahmed Khan</div>
-            <div style={{ fontSize: 11, color: 'var(--ink3)' }}>Family case · £1,200</div>
-          </div>
-        </div>
-
-        <button className={`pnb${tab === 'overview'  ? ' active' : ''}`} onClick={() => setTab('overview')}>Overview</button>
-        <button className={`pnb${tab === 'documents' ? ' active' : ''}`} onClick={() => setTab('documents')}>Documents</button>
-        <button className={`pnb${tab === 'assetreg'  ? ' active' : ''}`} onClick={() => setTab('assetreg')}>Asset register</button>
-        <button className={`pnb${tab === 'messages'  ? ' active' : ''}`} onClick={() => setTab('messages')}>
-          Messages
-          <Badge variant="outline" style={{ marginLeft: 'auto', background: 'var(--ambl)', color: 'var(--ambd)', borderColor: 'transparent', fontSize: 10 }}>1</Badge>
-        </button>
-
-        <div style={{ marginTop: 'auto' }}>
-          <Separator style={{ background: 'var(--cr2)', margin: '0 0 12px' }} />
-          <div style={{ fontSize: 11, color: 'var(--ink3)', marginBottom: 8 }}>Your solicitor</div>
-          <div className="ir"><span className="irl">Name</span><span className="irv">Fatima Hassan</span></div>
-          <div className="ir" style={{ borderBottom: 'none' }}><span className="irl">SRA</span><span className="irv">123456</span></div>
-          <SignOutButton style={{
-            display: 'flex', alignItems: 'center', gap: 8,
-            marginTop: 12, width: '100%', padding: '9px 12px',
-            background: 'none', border: '1px solid var(--cr2)',
-            borderRadius: 'var(--r)', cursor: 'pointer',
-            fontSize: 13, color: 'var(--ink3)', fontFamily: 'var(--sans)',
-          }} />
-        </div>
-      </div>
-
+      <PortalSidebar activeTab={activeTab} />
       <div className="pmain">
-        {tab === 'overview'  && <OverviewTab />}
-        {tab === 'documents' && <DocumentsTab />}
-        {tab === 'assetreg'  && <AssetRegisterTab />}
-        {tab === 'messages'  && <MessagesTab />}
+        {activeTab === 'overview'  && <OverviewTab />}
+        {activeTab === 'mywills'   && <MyWillsTab drafts={drafts} />}
+        {activeTab === 'documents' && <DocumentsTab />}
+        {activeTab === 'assetreg'  && <AssetRegisterTab />}
+        {activeTab === 'messages'  && <MessagesTab />}
       </div>
     </div>
   )

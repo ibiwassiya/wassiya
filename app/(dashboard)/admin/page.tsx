@@ -25,13 +25,14 @@ interface Props {
 export default async function AdminPage({ searchParams }: Props) {
   const supabase = await createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  const { data: claimsData } = await supabase.auth.getClaims()
+  const userId = claimsData?.claims?.sub
+  if (!userId) redirect('/login')
 
   const { data: me } = await supabase
     .from('profiles')
     .select('role')
-    .eq('id', user.id)
+    .eq('id', userId)
     .single()
 
   if (me?.role !== 'admin') redirect('/portal')
@@ -48,7 +49,7 @@ export default async function AdminPage({ searchParams }: Props) {
     <div className="pwrap">
       <AdminSidebar activeTab={activeTab} profiles={(profiles ?? []) as Profile[]} />
       <div className="pmain">
-        {activeTab === 'users'  && <UsersTab profiles={(profiles ?? []) as Profile[]} currentUserId={user.id} />}
+        {activeTab === 'users'  && <UsersTab profiles={(profiles ?? []) as Profile[]} currentUserId={userId} />}
         {activeTab === 'create' && <CreateUserForm />}
       </div>
     </div>

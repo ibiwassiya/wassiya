@@ -1,18 +1,15 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-// Which roles are allowed on each protected route prefix.
-// Admin can access every route.
 const ROUTE_ROLES: Record<string, string[]> = {
-  '/portal':         ['client',    'admin'],
-  '/start':          ['client',    'admin'],
-  '/advisor':        ['advisor',   'admin'],
-  '/solicitor':      ['solicitor', 'admin'],
-  '/scholar':        ['scholar',   'admin'],
-  '/admin':          ['admin'],
+  '/portal':    ['client',    'admin'],
+  '/start':     ['client',    'admin'],
+  '/advisor':   ['advisor',   'admin'],
+  '/solicitor': ['solicitor', 'admin'],
+  '/scholar':   ['scholar',   'admin'],
+  '/admin':     ['admin'],
 }
 
-// Where to send each role after a successful sign-in (or wrong-route redirect).
 const ROLE_DASHBOARDS: Record<string, string> = {
   client:    '/portal',
   advisor:   '/advisor',
@@ -41,7 +38,7 @@ export async function updateSession(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet, cacheHeaders) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           )
@@ -49,22 +46,28 @@ export async function updateSession(request: NextRequest) {
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           )
+          // Prevent CDNs from caching responses that contain session tokens
+          if (cacheHeaders) {
+            Object.entries(cacheHeaders).forEach(([key, value]) =>
+              supabaseResponse.headers.set(key, value)
+            )
+          }
         },
       },
     }
   )
 
-  // getUser() makes a server round-trip — cannot be spoofed unlike getSession().
-  const { data: { user } } = await supabase.auth.getUser()
+  // getClaims() verifies the JWT locally via WebCrypto — no network call.
+  // Works in Edge Runtime unlike getUser() which makes a live API call.
+  const { data: claims } = await supabase.auth.getClaims()
+  const userId = claims?.claims?.sub
 
   const path = request.nextUrl.pathname
   const matchedRoute = PROTECTED.find(r => path.startsWith(r))
 
-  // Not a protected route — pass through.
   if (!matchedRoute) return supabaseResponse
 
-  // Protected route, no session — redirect to login preserving intended path.
-  if (!user) {
+  if (!userId) {
     const loginUrl = request.nextUrl.clone()
     loginUrl.pathname = '/login'
     loginUrl.searchParams.set('next', path)
@@ -74,13 +77,12 @@ export async function updateSession(request: NextRequest) {
   const { data: profile } = await supabase
     .from('profiles')
     .select('role')
-    .eq('id', user.id)
+    .eq('id', userId)
     .single()
 
   const role = profile?.role ?? 'client'
   const allowed = ROUTE_ROLES[matchedRoute]
 
-  // Role not permitted for this route — redirect to their own dashboard.
   if (!allowed.includes(role)) {
     const dashboardUrl = request.nextUrl.clone()
     dashboardUrl.pathname = ROLE_DASHBOARDS[role] ?? '/portal'

@@ -16,13 +16,14 @@ const ROLE_DASHBOARDS: Record<string, string> = {
 
 export default async function LoginPage({ searchParams }: Props) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data } = await supabase.auth.getClaims()
+  const userId = data?.claims?.sub
 
-  if (user) {
+  if (userId) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single()
 
     redirect(ROLE_DASHBOARDS[profile?.role ?? 'client'] ?? '/portal')

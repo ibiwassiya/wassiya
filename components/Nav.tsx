@@ -24,16 +24,17 @@ const ROLE_DASHBOARDS: Record<string, string> = {
 }
 
 interface NavProps {
-  initialUser:      User | null
+  initialLoggedIn:  boolean
   initialRole:      string | null
   initialDashboard: string
 }
 
-export default function Nav({ initialUser, initialRole, initialDashboard }: NavProps) {
+export default function Nav({ initialLoggedIn, initialRole, initialDashboard }: NavProps) {
   const pathname = usePathname()
   const [scrolled,  setScrolled]  = useState(false)
   const [menuOpen,  setMenuOpen]  = useState(false)
-  const [user,      setUser]      = useState<User | null>(initialUser)
+  const [user,      setUser]      = useState<User | null>(null)
+  const [loggedIn,  setLoggedIn]  = useState(initialLoggedIn)
   const [role,      setRole]      = useState<string | null>(initialRole)
   const [dashboard, setDashboard] = useState(initialDashboard)
 
@@ -50,11 +51,13 @@ export default function Nav({ initialUser, initialRole, initialDashboard }: NavP
             .single()
           const r = (data as { role: string } | null)?.role ?? 'client'
           setUser(session.user)
+          setLoggedIn(true)
           setRole(r)
           setDashboard(ROLE_DASHBOARDS[r] ?? '/portal')
         }
       } else if (event === 'SIGNED_OUT') {
         setUser(null)
+        setLoggedIn(false)
         setRole(null)
         setDashboard('/portal')
       }
@@ -94,11 +97,11 @@ export default function Nav({ initialUser, initialRole, initialDashboard }: NavP
             ))}
           </div>
           <div className="navcta">
-            {user
+            {loggedIn
               ? <Link href={dashboard} className="ncta" style={{ background: 'var(--ink)', color: '#fff' }}>Dashboard</Link>
               : <Link href="/login" className={`nl${pathname === '/login' ? ' cur' : ''}`}>Sign in</Link>
             }
-            {(!user || role === 'client') && (
+            {(!loggedIn || role === 'client') && (
               <Link href="/start" className="ncta">Start my will</Link>
             )}
           </div>
@@ -114,7 +117,7 @@ export default function Nav({ initialUser, initialRole, initialDashboard }: NavP
         {navLinks.map(l => (
           <Link key={l.href} href={l.href} className="mml" onClick={closeMenu}>{l.label}</Link>
         ))}
-        {user
+        {loggedIn
           ? <Link href={dashboard} className="mml" onClick={closeMenu}>Dashboard</Link>
           : <Link href="/login" className="mml" onClick={closeMenu}>Sign in</Link>
         }
@@ -124,7 +127,7 @@ export default function Nav({ initialUser, initialRole, initialDashboard }: NavP
         {role === 'advisor' && (
           <Link href="/advisor" className="mml" onClick={closeMenu}>Advisor portal</Link>
         )}
-        {(!user || role === 'client') && (
+        {(!loggedIn || role === 'client') && (
           <Link href="/start" className="btn btn-g" style={{ marginTop: 16, width: '100%', justifyContent: 'center' }} onClick={closeMenu}>Start my will</Link>
         )}
       </div>
