@@ -7,8 +7,8 @@ import { useForm, useFieldArray } from 'react-hook-form'
 import { saveDraft } from '@/actions/draft/save'
 import { loadDraft } from '@/actions/draft/load'
 
-const STAGES = ['You','Address','Family','Relatives','Property','Finance','Debts','Legal','Religious','Executor','Guardian','Islamic','Gifts','IHT','Summary']
-const STAGE_MAP = [0,1,2,4,5,6,8,9,11,12,13,14,15,16,17]
+const STAGES = ['You', 'Family', 'Estate', 'Legal', 'Duties', 'People', 'Gifts', 'Summary']
+const STAGE_MAP = [0, 2, 6, 12, 14, 16, 18, 20]
 const WB_TOTAL = 20
 
 // Fields to trigger per step (input steps only — selection steps use canContinue)
@@ -45,9 +45,9 @@ const STEPS: Step[] = [
   { sec: 'Legal', type: 'opts', q: 'Survivorship period for beneficiaries', sub: 'Standard UK legal protection — prevents the estate being administered twice.', tip: '30 days is the UK standard and recommended for most wills.', ops: [{ t: '30 days (recommended)', s: 'Standard UK protection' }, { t: '60 days', s: 'Extended protection' }, { t: 'No survivorship requirement', s: 'Not recommended' }] },
   { sec: 'Legal', type: 'opts', q: 'If a child predeceases you, should their share pass to their children?', sub: 'This is called per stirpes distribution.', tip: "Example: if you have 3 children and one dies before you leaving 2 of their own children, per stirpes means those grandchildren split their parent's share.", ops: [{ t: 'Yes — per stirpes (recommended)', s: "Grandchildren inherit their parent's share" }, { t: 'No — redistribute to surviving children' }, { t: 'Specify per child individually', s: 'Complex — solicitor will advise' }] },
   { sec: 'Religious', type: 'religious', q: 'Do you have any outstanding religious obligations?', sub: 'Select all that apply. These are settled from your estate before distribution under Islamic law.', tip: 'It is a duty in Islam to settle these obligations. Recording them now protects your family from uncertainty.' },
+  { sec: 'Provisions', type: 'multi', q: 'Would you like any provisions beyond standard Faraid?', sub: 'Select all that apply. Subject to the 1/3 Wasiyyah limit.', opts: ['None — standard Faraid distribution only', 'Wasiyyah bequest (up to 1/3 of estate)', 'Waqf — charitable endowment', 'Power of attorney (Wakala)', 'Letter of wishes', 'Detailed funeral instructions', 'Private solicitor consultation (confidential)'] },
   { sec: 'Executor', type: 'appoint', flavor: 'executor', q: 'Who would you appoint as executor?', sub: 'Your executor carries out your wishes. You may appoint up to three.', info: 'If appointing a professional (solicitor or accountant), a remuneration clause under s.29(2) Trustee Act 2000 will be included.' },
   { sec: 'Guardian', type: 'appoint', flavor: 'guardian', q: 'Who would you appoint as guardian for your minor children?', sub: 'The guardian raises your children if both parents are no longer alive.', info: 'Islamic scholars recommend a Muslim guardian. Courts make the final decision — your preference carries significant weight.' },
-  { sec: 'Islamic', type: 'multi', q: 'Would you like any Islamic provisions beyond standard Faraid?', sub: 'Select all that apply. Subject to the 1/3 Wasiyyah limit.', opts: ['None — standard Faraid distribution only', 'Wasiyyah bequest (up to 1/3 of estate)', 'Waqf — charitable endowment', 'Power of attorney (Wakala)', 'Letter of wishes', 'Detailed funeral instructions', 'Private solicitor consultation (confidential)'] },
   { sec: 'Gifts', type: 'opts', q: 'Do you wish to leave any specific gifts?', sub: 'Subject to the Wasiyyah 1/3 limit.', ops: [{ t: 'No specific gifts' }, { t: 'Cash to named individuals', s: 'Must not be a Faraid heir' }, { t: 'Personal possessions (jewellery, heirlooms)' }, { t: 'Gift to a charity, mosque or Islamic institution' }] },
   { sec: 'IHT', type: 'opts', q: 'Approximate total estate value?', sub: 'Determines whether inheritance tax advice is needed. UK threshold: £325k individual / £650k couple.', tip: 'Estates above these thresholds may be subject to 40% IHT on the excess.', ops: [{ t: 'Under £325,000' }, { t: '£325,000 – £650,000', s: 'May apply — flagged for review' }, { t: 'Over £650,000', s: 'IHT specialist strongly recommended' }, { t: 'Not sure', s: 'We will flag for review to be safe' }] },
   { sec: 'Summary', type: 'summary' },
@@ -70,7 +70,7 @@ function calcFee(opts: Record<number, number>, childrenHas: boolean | null, mult
   const base = tier === 'complex' ? 2000 : tier === 'family' ? 1200 : 499
   const items: { l: string; v: number }[] = [{ l: tier === 'complex' ? 'Complex estate plan' : tier === 'family' ? 'Family package' : 'Essentials', v: base }]
   if (watchedProps.some(p => p.type === 'Property abroad')) items.push({ l: 'Overseas property addendum', v: 500 })
-  if (multi[17]?.includes(2)) items.push({ l: 'Waqf trust deed', v: 800 })
+  if (multi[15]?.includes(2)) items.push({ l: 'Waqf trust deed', v: 800 })
   if (opts[19] === 2) items.push({ l: 'IHT specialist review', v: 750 })
   return { total: items.reduce((s, i) => s + i.v, 0), items, tier }
 }
@@ -206,8 +206,8 @@ export default function WillBuilderPage() {
 
       <div className="wbstages">
         {STAGES.map((s, i) => (
-          <div key={s} className={`wbs ${stageIndex(i)}`} onClick={() => { if (cur >= STAGE_MAP[i]) { setCur(STAGE_MAP[i]); window.scrollTo({ top: 0, behavior: 'instant' }) } }} title={s}>
-            {i + 1}
+          <div key={s} className={`wbs ${stageIndex(i)}`} onClick={() => { if (cur >= STAGE_MAP[i]) { setCur(STAGE_MAP[i]); window.scrollTo({ top: 0, behavior: 'instant' }) } }}>
+            {s}
           </div>
         ))}
       </div>

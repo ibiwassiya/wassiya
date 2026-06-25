@@ -11,7 +11,7 @@ export type DraftPayload = {
   step:        number
 }
 
-export async function saveDraft(payload: DraftPayload): Promise<{ error?: string }> {
+export async function saveDraft(payload: DraftPayload): Promise<{ id?: string; error?: string }> {
   const supabase = await createClient()
   const { data } = await supabase.auth.getClaims()
   const userId = data?.claims?.sub
@@ -34,12 +34,14 @@ export async function saveDraft(payload: DraftPayload): Promise<{ error?: string
       .update({ answers })
       .eq('id', existing.id)
     if (error) return { error: error.message }
+    return { id: existing.id }
   } else {
-    const { error } = await supabase
+    const { data: created, error } = await supabase
       .from('questionnaire_drafts')
       .insert({ customer_id: userId, answers })
+      .select('id')
+      .single()
     if (error) return { error: error.message }
+    return { id: created.id }
   }
-
-  return {}
 }
